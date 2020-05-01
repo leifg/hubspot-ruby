@@ -21,7 +21,7 @@ gem "hubspot-ruby"
 Before using the library, you must initialize it with your HubSpot API key. If you're using Rails, put this code in an initializer:
 
 ```ruby
-Hubspot.configure(hapikey: "YOUR_API_KEY")
+HubspotLegacy.configure(hapikey: "YOUR_API_KEY")
 ```
 
 If you have a HubSpot account, you can get your api key by logging in and visiting this url: https://app.hubspot.com/keys/get
@@ -31,7 +31,7 @@ If you have a HubSpot account, you can get your api key by logging in and visiti
 Configure the library with the client ID and secret from your [HubSpot App](https://developers.hubspot.com/docs/faq/how-do-i-create-an-app-in-hubspot)
 
 ```ruby
-Hubspot.configure(
+HubspotLegacy.configure(
     client_id: "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx",
     client_secret: "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx",
     redirect_uri: "https://myapp.com/oauth")
@@ -40,19 +40,19 @@ Hubspot.configure(
 To initiate an OAuth connection to your app, create a URL with the required scopes:
 
 ```ruby
-Hubspot::OAuth.authorize_url(["contacts", "content"])
+HubspotLegacy::OAuth.authorize_url(["contacts", "content"])
 ```
 
 After the user accepts the scopes and installs the integration with their HubSpot account, they will be redirected to the URI requested with the query parameter `code` appended to the URL. `code` can then be passed to HubSpot to generate an access token:
 
 ```ruby
-Hubspot::OAuth.create(params[:code])
+HubspotLegacy::OAuth.create(params[:code])
 ```
 
 To use the returned `access_token` string for authentication, you'll need to update the configuration:
 
 ```ruby
-Hubspot.configure(
+HubspotLegacy.configure(
     client_id: "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx",
     client_secret: "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx",
     redirect_uri: "https://myapp.com/oauth",
@@ -62,7 +62,7 @@ Hubspot.configure(
 Now all requests will use the provided access token when querying the API:
 
 ```ruby
-Hubspot::Contact.all
+HubspotLegacy::Contact.all
 ```
 
 ### Refreshing the token
@@ -70,7 +70,7 @@ Hubspot::Contact.all
 When you create a HubSpot OAuth token, it will have an expiration date given by the `expires_in` field returned from the create API. If you with to continue using the token without needing to create another, you'll need to refresh the token:
 
 ```ruby
-Hubspot::OAuth.refresh(refresh_token)
+HubspotLegacy::OAuth.refresh(refresh_token)
 ```
 
 ### A note on OAuth credentials
@@ -84,27 +84,27 @@ Here's what you can do for now:
 ### Create a contact
 
 ```ruby
-Hubspot::Contact.create!("email@address.com", {firstname: "First", lastname: "Last"})
+HubspotLegacy::Contact.create!("email@address.com", {firstname: "First", lastname: "Last"})
 ```
 
 #### In batches
 
 ```ruby
-Hubspot::Contact.create_or_update!([{email: 'smith@example.com', firstname: 'First', lastname: 'Last'}])
+HubspotLegacy::Contact.create_or_update!([{email: 'smith@example.com', firstname: 'First', lastname: 'Last'}])
 ```
 
 ### Find a contact
 
-These methods will return a `Hubspot::Contact` object if successful, `nil` otherwise:
+These methods will return a `HubspotLegacy::Contact` object if successful, `nil` otherwise:
 
 ```ruby
-Hubspot::Contact.find_by_email("email@address.com")
-Hubspot::Contact.find_by_id(12345) # Pass the contact VID
+HubspotLegacy::Contact.find_by_email("email@address.com")
+HubspotLegacy::Contact.find_by_id(12345) # Pass the contact VID
 ```
 
 ### Update a contact
 
-Given an instance of `Hubspot::Contact`, update its attributes with:
+Given an instance of `HubspotLegacy::Contact`, update its attributes with:
 
 ```ruby
 contact.update!({firstname: "First", lastname: "Last"})
@@ -113,13 +113,13 @@ contact.update!({firstname: "First", lastname: "Last"})
 #### In batches
 
 ```ruby
-Hubspot::Contact.create_or_update!([{vid: '12345', firstname: 'First', lastname: 'Last'}])
+HubspotLegacy::Contact.create_or_update!([{vid: '12345', firstname: 'First', lastname: 'Last'}])
 ```
 
 ### Create a deal
 
 ```ruby
-Hubspot::Deal.create!(nil, [company.vid], [contact.vid], pipeline: 'default', dealstage: 'initial_contact')
+HubspotLegacy::Deal.create!(nil, [company.vid], [contact.vid], pipeline: 'default', dealstage: 'initial_contact')
 ```
 
 ## Contributing to hubspot-ruby

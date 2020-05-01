@@ -1,6 +1,6 @@
 module HubspotApiHelpers
   def hubspot_api_url(path)
-    URI.join(Hubspot::Config.base_url, path)
+    URI.join(HubspotLegacy::Config.base_url, path)
   end
 end
 

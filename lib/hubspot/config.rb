@@ -1,7 +1,7 @@
 require 'logger'
 require 'hubspot/connection'
 
-module Hubspot
+module HubspotLegacy
   class Config
 
     CONFIG_KEYS = [
@@ -27,10 +27,10 @@ module Hubspot
         @open_timeout = config['open_timeout'] || config['timeout']
 
         unless access_token.present? ^ hapikey.present?
-          Hubspot::ConfigurationError.new("You must provide either an access_token or an hapikey")
+          HubspotLegacy::ConfigurationError.new("You must provide either an access_token or an hapikey")
         end
         if access_token.present?
-          Hubspot::Connection.headers("Authorization" => "Bearer #{access_token}")
+          HubspotLegacy::Connection.headers("Authorization" => "Bearer #{access_token}")
         end
         self
       end
@@ -41,12 +41,12 @@ module Hubspot
         @portal_id = nil
         @logger = DEFAULT_LOGGER
         @access_token = nil
-        Hubspot::Connection.headers({})
+        HubspotLegacy::Connection.headers({})
       end
 
       def ensure!(*params)
         params.each do |p|
-          raise Hubspot::ConfigurationError.new("'#{p}' not configured") unless instance_variable_get "@#{p}"
+          raise HubspotLegacy::ConfigurationError.new("'#{p}' not configured") unless instance_variable_get "@#{p}"
         end
       end
     end

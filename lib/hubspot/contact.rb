@@ -1,4 +1,4 @@
-module Hubspot
+module HubspotLegacy
   #
   # HubSpot Contacts API
   #
@@ -28,8 +28,8 @@ module Hubspot
       def create!(email, params={})
         params_with_email = params.stringify_keys
         params_with_email = params.stringify_keys.merge('email' => email) if email
-        post_data = {properties: Hubspot::Utils.hash_to_properties(params_with_email)}
-        response = Hubspot::Connection.post_json(CREATE_CONTACT_PATH, params: {}, body: post_data )
+        post_data = {properties: HubspotLegacy::Utils.hash_to_properties(params_with_email)}
+        response = HubspotLegacy::Connection.post_json(CREATE_CONTACT_PATH, params: {}, body: post_data )
         new(response)
       end
 
@@ -42,14 +42,14 @@ module Hubspot
         paged = opts.delete(:paged) { false }
         path, opts =
         if recent_created
-          [RECENTLY_CREATED_PATH, Hubspot::ContactProperties.add_default_parameters(opts)]
+          [RECENTLY_CREATED_PATH, HubspotLegacy::ContactProperties.add_default_parameters(opts)]
         elsif recent
-          [RECENTLY_UPDATED_PATH, Hubspot::ContactProperties.add_default_parameters(opts)]
+          [RECENTLY_UPDATED_PATH, HubspotLegacy::ContactProperties.add_default_parameters(opts)]
         else
           [CONTACTS_PATH, opts]
         end
 
-        response = Hubspot::Connection.get_json(path, opts)
+        response = HubspotLegacy::Connection.get_json(path, opts)
         response['contacts'].map! { |c| new(c) }
         paged ? response : response['contacts']
       end
@@ -58,8 +58,8 @@ module Hubspot
       # PATH /contacts/v1/contact/createOrUpdate/email/:contact_email
       # API endpoint: https://developers.hubspot.com/docs/methods/contacts/create_or_update
       def createOrUpdate(email, params={})
-        post_data = {properties: Hubspot::Utils.hash_to_properties(params.stringify_keys)}
-        response = Hubspot::Connection.post_json(CREATE_OR_UPDATE_PATH, params: { contact_email: email }, body: post_data )
+        post_data = {properties: HubspotLegacy::Utils.hash_to_properties(params.stringify_keys)}
+        response = HubspotLegacy::Connection.post_json(CREATE_OR_UPDATE_PATH, params: { contact_email: email }, body: post_data )
         contact = find_by_id(response['vid'])
         contact.is_new = response['isNew']
         contact
@@ -73,19 +73,19 @@ module Hubspot
           if contact_hash[:vid]
             contact_param = {
               vid: contact_hash[:vid],
-              properties: Hubspot::Utils.hash_to_properties(contact_hash.except(:vid))
+              properties: HubspotLegacy::Utils.hash_to_properties(contact_hash.except(:vid))
             }
           elsif contact_hash[:email]
             contact_param = {
               email: contact_hash[:email],
-              properties: Hubspot::Utils.hash_to_properties(contact_hash.except(:email))
+              properties: HubspotLegacy::Utils.hash_to_properties(contact_hash.except(:email))
             }
           else
-            raise Hubspot::InvalidParams, 'expecting vid or email for contact'
+            raise HubspotLegacy::InvalidParams, 'expecting vid or email for contact'
           end
           contact_param
         end
-        Hubspot::Connection.post_json(BATCH_CREATE_OR_UPDATE_PATH,
+        HubspotLegacy::Connection.post_json(BATCH_CREATE_OR_UPDATE_PATH,
                                       params: {},
                                       body: query)
       end
@@ -97,11 +97,11 @@ module Hubspot
         batch_mode, path, params = case vids
         when Integer then [false, GET_CONTACT_BY_ID_PATH, { contact_id: vids }]
         when Array then [true, CONTACT_BATCH_PATH, { batch_vid: vids }]
-        else raise Hubspot::InvalidParams, 'expecting Integer or Array of Integers parameter'
+        else raise HubspotLegacy::InvalidParams, 'expecting Integer or Array of Integers parameter'
         end
 
-        response = Hubspot::Connection.get_json(path, params)
-        raise Hubspot::ApiError if batch_mode
+        response = HubspotLegacy::Connection.get_json(path, params)
+        raise HubspotLegacy::ApiError if batch_mode
         new(response)
       end
 
@@ -111,11 +111,11 @@ module Hubspot
         batch_mode, path, params = case emails
         when String then [false, GET_CONTACT_BY_EMAIL_PATH, { contact_email: emails }]
         when Array then [true, GET_CONTACTS_BY_EMAIL_PATH, { batch_email: emails }]
-        else raise Hubspot::InvalidParams, 'expecting String or Array of Strings parameter'
+        else raise HubspotLegacy::InvalidParams, 'expecting String or Array of Strings parameter'
         end
 
         begin
-          response = Hubspot::Connection.get_json(path, params)
+          response = HubspotLegacy::Connection.get_json(path, params)
           if batch_mode
             response.map{|_, contact| new(contact)}
           else
@@ -134,11 +134,11 @@ module Hubspot
         batch_mode, path, params = case utks
         when String then [false, GET_CONTACT_BY_UTK_PATH, { contact_utk: utks }]
         when Array then [true, GET_CONTACTS_BY_UTK_PATH, { batch_utk: utks }]
-        else raise Hubspot::InvalidParams, 'expecting String or Array of Strings parameter'
+        else raise HubspotLegacy::InvalidParams, 'expecting String or Array of Strings parameter'
         end
 
-        response = Hubspot::Connection.get_json(path, params)
-        raise Hubspot::ApiError if batch_mode
+        response = HubspotLegacy::Connection.get_json(path, params)
+        raise HubspotLegacy::ApiError if batch_mode
         new(response)
       end
 
@@ -147,7 +147,7 @@ module Hubspot
         count   = options.fetch(:count, 100)
         offset  = options.fetch(:offset, 0)
 
-        response = Hubspot::Connection.get_json(QUERY_PATH, { q: query, count: count, offset: offset })
+        response = HubspotLegacy::Connection.get_json(QUERY_PATH, { q: query, count: count, offset: offset })
         response.merge("contacts" => response["contacts"].map { |contact_hash| new(contact_hash) })
       end
 
@@ -157,7 +157,7 @@ module Hubspot
       # The secondary email still won't be available for new contacts
       # {https://developers.hubspot.com/docs/methods/contacts/merge-contacts}
       def merge!(primary_contact_vid, secondary_contact_vid)
-        Hubspot::Connection.post_json(
+        HubspotLegacy::Connection.post_json(
           MERGE_CONTACT_PATH,
           params: { contact_id: primary_contact_vid, no_parse: true },
           body: { vidToMerge: secondary_contact_vid }
@@ -170,7 +170,7 @@ module Hubspot
 
     def initialize(response_hash)
       props = response_hash['properties'] || {}
-      @properties = Hubspot::Utils.properties_to_hash(props)
+      @properties = HubspotLegacy::Utils.properties_to_hash(props)
       @is_contact = response_hash["is-contact"]
       @list_memberships = response_hash["list-memberships"] || []
       @vid = response_hash['vid']
@@ -195,10 +195,10 @@ module Hubspot
     # Updates the properties of a contact
     # {https://developers.hubspot.com/docs/methods/contacts/update_contact}
     # @param params [Hash] hash of properties to update
-    # @return [Hubspot::Contact] self
+    # @return [HubspotLegacy::Contact] self
     def update!(params)
-      query = {"properties" => Hubspot::Utils.hash_to_properties(params.stringify_keys!)}
-      Hubspot::Connection.post_json(UPDATE_CONTACT_PATH, params: { contact_id: vid }, body: query)
+      query = {"properties" => HubspotLegacy::Utils.hash_to_properties(params.stringify_keys!)}
+      HubspotLegacy::Connection.post_json(UPDATE_CONTACT_PATH, params: { contact_id: vid }, body: query)
       @properties.merge!(params)
       self
     end
@@ -207,7 +207,7 @@ module Hubspot
     # {https://developers.hubspot.com/docs/methods/contacts/delete_contact}
     # @return [TrueClass] true
     def destroy!
-      Hubspot::Connection.delete_json(DESTROY_CONTACT_PATH, { contact_id: vid })
+      HubspotLegacy::Connection.delete_json(DESTROY_CONTACT_PATH, { contact_id: vid })
       @destroyed = true
     end
 

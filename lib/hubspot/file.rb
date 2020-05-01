@@ -1,4 +1,4 @@
-module Hubspot
+module HubspotLegacy
   class File
     UPLOAD_FILE_PATH = '/filemanager/api/v2/files'
 
@@ -16,7 +16,7 @@ module Hubspot
               { name: 'folder_paths', contents: params['folder_paths'] }
             ]
         }
-        Hubspot::FilesConnection.post(UPLOAD_FILE_PATH, params: query, body: options)
+        HubspotLegacy::FilesConnection.post(UPLOAD_FILE_PATH, params: query, body: options)
       end
     end
   end

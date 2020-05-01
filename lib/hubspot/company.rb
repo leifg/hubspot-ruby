@@ -1,4 +1,4 @@
-module Hubspot
+module HubspotLegacy
   #
   # HubSpot Companies API
   #
@@ -25,7 +25,7 @@ module Hubspot
       #    offset [Integer] for pagination
       # {http://developers.hubspot.com/docs/methods/companies/get_companies_created}
       # {http://developers.hubspot.com/docs/methods/companies/get_companies_modified}
-      # @return [Array] Array of Hubspot::Company records
+      # @return [Array] Array of HubspotLegacy::Company records
       def all(opts={})
         recently_updated = opts.delete(:recently_updated) { false }
         # limit = opts.delete(:limit) { 20 }
@@ -36,7 +36,7 @@ module Hubspot
           RECENTLY_CREATED_COMPANIES_PATH
         end
 
-        response = Hubspot::Connection.get_json(path, opts)
+        response = HubspotLegacy::Connection.get_json(path, opts)
         response['results'].map { |c| new(c) }
       end
 
@@ -59,7 +59,7 @@ module Hubspot
           RECENTLY_CREATED_COMPANIES_PATH
         end
 
-        response = Hubspot::Connection.get_json(path, opts)
+        response = HubspotLegacy::Connection.get_json(path, opts)
         response_with_offset = {}
         response_with_offset['results'] = response['results'].map { |c| new(c) }
         response_with_offset['hasMore'] = response['hasMore']
@@ -74,12 +74,12 @@ module Hubspot
       #    limit [Integer] for pagination
       #    properties [Array] list of company properties to recieve
       #    offset_company_id [Integer] for pagination (should be company ID)
-      # @return [Array] Array of Hubspot::Company records
+      # @return [Array] Array of HubspotLegacy::Company records
       def find_by_domain(domain, options = {})
-        raise Hubspot::InvalidParams, 'expecting String parameter' unless domain.try(:is_a?, String)
+        raise HubspotLegacy::InvalidParams, 'expecting String parameter' unless domain.try(:is_a?, String)
 
         limit = options.fetch(:limit, 100)
-        properties = options.fetch(:properties) { Hubspot::CompanyProperties.all.map { |property| property["name"] } }
+        properties = options.fetch(:properties) { HubspotLegacy::CompanyProperties.all.map { |property| property["name"] } }
         offset_company_id = options.fetch(:offset_company_id, nil)
 
         post_data = {
@@ -95,7 +95,7 @@ module Hubspot
 
         companies = []
         begin
-          response = Hubspot::Connection.post_json(GET_COMPANY_BY_DOMAIN_PATH, params: { domain: domain }, body: post_data )
+          response = HubspotLegacy::Connection.post_json(GET_COMPANY_BY_DOMAIN_PATH, params: { domain: domain }, body: post_data )
           companies = response["results"].try(:map) { |company| new(company) }
         rescue => e
           raise e unless e.message =~ /not found/ # 404 / hanle the error and kindly return an empty array
@@ -106,23 +106,23 @@ module Hubspot
       # Finds a company by domain
       # {http://developers.hubspot.com/docs/methods/companies/get_company}
       # @param id [Integer] company id to search by
-      # @return [Hubspot::Company] Company record
+      # @return [HubspotLegacy::Company] Company record
       def find_by_id(id)
         path = GET_COMPANY_BY_ID_PATH
         params = { company_id: id }
-        raise Hubspot::InvalidParams, 'expecting Integer parameter' unless id.try(:is_a?, Integer)
-        response = Hubspot::Connection.get_json(path, params)
+        raise HubspotLegacy::InvalidParams, 'expecting Integer parameter' unless id.try(:is_a?, Integer)
+        response = HubspotLegacy::Connection.get_json(path, params)
         new(response)
       end
 
       # Creates a company with a name
       # {http://developers.hubspot.com/docs/methods/companies/create_company}
       # @param name [String]
-      # @return [Hubspot::Company] Company record
+      # @return [HubspotLegacy::Company] Company record
       def create!(name, params={})
         params_with_name = params.stringify_keys.merge("name" => name)
-        post_data = {properties: Hubspot::Utils.hash_to_properties(params_with_name, key_name: "name")}
-        response = Hubspot::Connection.post_json(CREATE_COMPANY_PATH, params: {}, body: post_data )
+        post_data = {properties: HubspotLegacy::Utils.hash_to_properties(params_with_name, key_name: "name")}
+        response = HubspotLegacy::Connection.post_json(CREATE_COMPANY_PATH, params: {}, body: post_data )
         new(response)
       end
 
@@ -137,19 +137,19 @@ module Hubspot
             # For consistency - Since vid has been used everywhere.
             company_param = {
               objectId: company_hash[:vid],
-              properties: Hubspot::Utils.hash_to_properties(company_hash.except(:vid).stringify_keys!, key_name: 'name'),
+              properties: HubspotLegacy::Utils.hash_to_properties(company_hash.except(:vid).stringify_keys!, key_name: 'name'),
             }
           elsif company_hash[:objectId]
             company_param = {
               objectId: company_hash[:objectId],
-              properties: Hubspot::Utils.hash_to_properties(company_hash.except(:objectId).stringify_keys!, key_name: 'name'),
+              properties: HubspotLegacy::Utils.hash_to_properties(company_hash.except(:objectId).stringify_keys!, key_name: 'name'),
             }
           else
-            raise Hubspot::InvalidParams, 'expecting vid or objectId for company'
+            raise HubspotLegacy::InvalidParams, 'expecting vid or objectId for company'
           end
           company_param
         end
-        Hubspot::Connection.post_json(BATCH_UPDATE_PATH, params: {}, body: query)
+        HubspotLegacy::Connection.post_json(BATCH_UPDATE_PATH, params: {}, body: query)
       end
 
       # Adds contact to a company
@@ -158,7 +158,7 @@ module Hubspot
       # @param contact_vid [Integer] contact id to add
       # @return parsed response
       def add_contact!(company_vid, contact_vid)
-        Hubspot::Connection.put_json(ADD_CONTACT_TO_COMPANY_PATH,
+        HubspotLegacy::Connection.put_json(ADD_CONTACT_TO_COMPANY_PATH,
                                      params: {
                                        company_id: company_vid,
                                        vid: contact_vid,
@@ -172,7 +172,7 @@ module Hubspot
 
     def initialize(response_hash)
       props = response_hash['properties'] || {}
-      @properties = Hubspot::Utils.properties_to_hash(props)
+      @properties = HubspotLegacy::Utils.properties_to_hash(props)
       @vid = response_hash["companyId"]
       @name = @properties.try(:[], "name")
     end
@@ -184,10 +184,10 @@ module Hubspot
     # Updates the properties of a company
     # {http://developers.hubspot.com/docs/methods/companies/update_company}
     # @param params [Hash] hash of properties to update
-    # @return [Hubspot::Company] self
+    # @return [HubspotLegacy::Company] self
     def update!(params)
-      query = {"properties" => Hubspot::Utils.hash_to_properties(params.stringify_keys!, key_name: "name")}
-      Hubspot::Connection.put_json(UPDATE_COMPANY_PATH, params: { company_id: vid }, body: query)
+      query = {"properties" => HubspotLegacy::Utils.hash_to_properties(params.stringify_keys!, key_name: "name")}
+      HubspotLegacy::Connection.put_json(UPDATE_COMPANY_PATH, params: { company_id: vid }, body: query)
       @properties.merge!(params)
       self
     end
@@ -200,7 +200,7 @@ module Hubspot
       vid_offset = nil
       vids = []
       loop do
-        data = Hubspot::Connection.get_json(GET_COMPANY_CONTACT_VIDS_PATH,
+        data = HubspotLegacy::Connection.get_json(GET_COMPANY_CONTACT_VIDS_PATH,
                                             company_id: vid,
                                             vidOffset: vid_offset)
         vids += data['vids']
@@ -213,9 +213,9 @@ module Hubspot
     # Adds contact to a company
     # {http://developers.hubspot.com/docs/methods/companies/add_contact_to_company}
     # @param id [Integer] contact id to add
-    # @return [Hubspot::Company] self
+    # @return [HubspotLegacy::Company] self
     def add_contact(contact_or_vid)
-      contact_vid = if contact_or_vid.is_a?(Hubspot::Contact)
+      contact_vid = if contact_or_vid.is_a?(HubspotLegacy::Contact)
                       contact_or_vid.vid
                     else
                       contact_or_vid
@@ -228,7 +228,7 @@ module Hubspot
     # {http://developers.hubspot.com/docs/methods/companies/delete_company}
     # @return [TrueClass] true
     def destroy!
-      Hubspot::Connection.delete_json(DESTROY_COMPANY_PATH, { company_id: vid })
+      HubspotLegacy::Connection.delete_json(DESTROY_COMPANY_PATH, { company_id: vid })
       @destroyed = true
     end
 
@@ -238,11 +238,11 @@ module Hubspot
 
     # Finds company contacts
     # {http://developers.hubspot.com/docs/methods/companies/get_company_contacts}
-    # @return [Array] Array of Hubspot::Contact records
+    # @return [Array] Array of HubspotLegacy::Contact records
     def contacts
-      response = Hubspot::Connection.get_json(GET_COMPANY_CONTACTS_PATH, company_id: vid)
+      response = HubspotLegacy::Connection.get_json(GET_COMPANY_CONTACTS_PATH, company_id: vid)
       response['contacts'].each_with_object([]) do |contact, memo|
-        memo << Hubspot::Contact.find_by_id(contact['vid'])
+        memo << HubspotLegacy::Contact.find_by_id(contact['vid'])
       end
     end
   end

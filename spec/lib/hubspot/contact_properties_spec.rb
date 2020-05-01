@@ -1,7 +1,7 @@
-describe Hubspot::ContactProperties do
+describe HubspotLegacy::ContactProperties do
   describe '.add_default_parameters' do
     let(:opts) { {} }
-    subject { Hubspot::ContactProperties.add_default_parameters(opts) }
+    subject { HubspotLegacy::ContactProperties.add_default_parameters(opts) }
     context 'default parameters' do
       context 'without property parameter' do
         its([:property]) { should == 'email' }
@@ -26,7 +26,7 @@ describe Hubspot::ContactProperties do
     end
   end
 
-  before { Hubspot.configure(hapikey: 'demo') }
+  before { HubspotLegacy.configure(hapikey: 'demo') }
 
   describe 'Properties' do
     describe '.all' do
@@ -34,7 +34,7 @@ describe Hubspot::ContactProperties do
         cassette 'all_properties'
 
         it 'should return all properties' do
-          expect(Hubspot::ContactProperties.all).to eql(example_properties)
+          expect(HubspotLegacy::ContactProperties.all).to eql(example_properties)
         end
       end
 
@@ -44,7 +44,7 @@ describe Hubspot::ContactProperties do
         cassette 'properties_in_groups'
 
         it 'should return properties for the specified group[s]' do
-          response = Hubspot::ContactProperties.all({}, { include: groups })
+          response = HubspotLegacy::ContactProperties.all({}, { include: groups })
           response.each { |p| expect(groups.include?(p['groupName'])).to be_true }
         end
       end
@@ -53,7 +53,7 @@ describe Hubspot::ContactProperties do
         cassette 'properties_not_in_groups'
 
         it 'should return properties for the non-specified group[s]' do
-          response = Hubspot::ContactProperties.all({}, { exclude: groups })
+          response = HubspotLegacy::ContactProperties.all({}, { exclude: groups })
           response.each { |p| expect(groups.include?(p['groupName'])).to be_false }
         end
       end
@@ -78,14 +78,14 @@ describe Hubspot::ContactProperties do
       'externalOptions'               => false,
       'displayMode'                   => 'current_value'
     } }
-    let(:valid_params) { params.select { |k, _| Hubspot::ContactProperties::PROPERTY_SPECS[:field_names].include?(k) } }
+    let(:valid_params) { params.select { |k, _| HubspotLegacy::ContactProperties::PROPERTY_SPECS[:field_names].include?(k) } }
 
     describe '.create!' do
       context 'with no valid parameters' do
         cassette 'fail_to_create_property'
 
         it 'should return nil' do
-          expect(Hubspot::ContactProperties.create!({})).to be(nil)
+          expect(HubspotLegacy::ContactProperties.create!({})).to be(nil)
         end
       end
 
@@ -93,7 +93,7 @@ describe Hubspot::ContactProperties do
         cassette 'create_property'
 
         it 'should return the valid parameters' do
-          response = Hubspot::ContactProperties.create!(params)
+          response = HubspotLegacy::ContactProperties.create!(params)
           valid_params.each { |k, v| expect(response[k]).to eq(v) }
         end
       end
@@ -103,7 +103,7 @@ describe Hubspot::ContactProperties do
       context 'with no valid parameters' do
 
         it 'should return nil ' do
-          expect(Hubspot::ContactProperties.update!(params['name'], {})).to be(nil)
+          expect(HubspotLegacy::ContactProperties.update!(params['name'], {})).to be(nil)
         end
       end
 
@@ -114,7 +114,7 @@ describe Hubspot::ContactProperties do
           params['description']       = 'What is their favorite flavor?'
           valid_params['description'] = params['description']
 
-          response = Hubspot::ContactProperties.update!(params['name'], params)
+          response = HubspotLegacy::ContactProperties.update!(params['name'], params)
           valid_params.each { |k, v| expect(response[k]).to eq(v) }
         end
       end
@@ -127,7 +127,7 @@ describe Hubspot::ContactProperties do
         cassette 'delete_property'
 
         it 'should return nil' do
-          expect(Hubspot::ContactProperties.delete!(name)).to eq(nil)
+          expect(HubspotLegacy::ContactProperties.delete!(name)).to eq(nil)
         end
       end
 
@@ -135,7 +135,7 @@ describe Hubspot::ContactProperties do
         cassette 'delete_non_property'
 
         it 'should raise an error' do
-          expect { Hubspot::ContactProperties.delete!(name) }.to raise_error(Hubspot::RequestError)
+          expect { HubspotLegacy::ContactProperties.delete!(name) }.to raise_error(HubspotLegacy::RequestError)
         end
       end
     end
@@ -147,7 +147,7 @@ describe Hubspot::ContactProperties do
         cassette 'all_groups'
 
         it 'should return all groups' do
-          expect(Hubspot::ContactProperties.groups).to eql(example_groups)
+          expect(HubspotLegacy::ContactProperties.groups).to eql(example_groups)
         end
       end
 
@@ -157,7 +157,7 @@ describe Hubspot::ContactProperties do
         cassette 'groups_included'
 
         it 'should return the specified groups' do
-          response = Hubspot::ContactProperties.groups({}, { include: groups })
+          response = HubspotLegacy::ContactProperties.groups({}, { include: groups })
           response.each { |p| expect(groups.include?(p['name'])).to be_true }
         end
       end
@@ -166,7 +166,7 @@ describe Hubspot::ContactProperties do
         cassette 'groups_not_excluded'
 
         it 'should return groups that were not excluded' do
-          response = Hubspot::ContactProperties.groups({}, { exclude: groups })
+          response = HubspotLegacy::ContactProperties.groups({}, { exclude: groups })
           response.each { |p| expect(groups.include?(p['name'])).to be_false }
         end
       end
@@ -177,7 +177,7 @@ describe Hubspot::ContactProperties do
     describe '.create_group!' do
       context 'with no valid parameters' do
         it 'should return nil' do
-          expect(Hubspot::ContactProperties.create_group!({})).to be(nil)
+          expect(HubspotLegacy::ContactProperties.create_group!({})).to be(nil)
         end
       end
 
@@ -185,8 +185,8 @@ describe Hubspot::ContactProperties do
         cassette 'create_group'
 
         it 'should return the valid parameters' do
-          response = Hubspot::ContactProperties.create_group!(params)
-          expect(Hubspot::ContactProperties.same?(response, params)).to be_true
+          response = HubspotLegacy::ContactProperties.create_group!(params)
+          expect(HubspotLegacy::ContactProperties.same?(response, params)).to be_true
         end
       end
 
@@ -197,8 +197,8 @@ describe Hubspot::ContactProperties do
 
         it 'should return the valid parameters' do
           params['name'] = 'ff_group234'
-          response       = Hubspot::ContactProperties.create_group!(sub_params)
-          expect(Hubspot::ContactProperties.same?(response, sub_params)).to be_true
+          response       = HubspotLegacy::ContactProperties.create_group!(sub_params)
+          expect(HubspotLegacy::ContactProperties.same?(response, sub_params)).to be_true
         end
       end
     end
@@ -207,7 +207,7 @@ describe Hubspot::ContactProperties do
       context 'with no valid parameters' do
 
         it 'should return nil ' do
-          expect(Hubspot::ContactProperties.update_group!(params['name'], {})).to be(nil)
+          expect(HubspotLegacy::ContactProperties.update_group!(params['name'], {})).to be(nil)
         end
       end
 
@@ -217,8 +217,8 @@ describe Hubspot::ContactProperties do
         it 'should return the valid parameters' do
           params['displayName'] = 'Test Group OneA'
 
-          response = Hubspot::ContactProperties.update_group!(params['name'], params)
-          expect(Hubspot::ContactProperties.same?(response, params)).to be_true
+          response = HubspotLegacy::ContactProperties.update_group!(params['name'], params)
+          expect(HubspotLegacy::ContactProperties.same?(response, params)).to be_true
         end
       end
 
@@ -231,7 +231,7 @@ describe Hubspot::ContactProperties do
         cassette 'delete_group'
 
         it 'should return nil' do
-          expect(Hubspot::ContactProperties.delete_group!(name)).to eq(nil)
+          expect(HubspotLegacy::ContactProperties.delete_group!(name)).to eq(nil)
         end
       end
 
@@ -239,7 +239,7 @@ describe Hubspot::ContactProperties do
         cassette 'delete_non_group'
 
         it 'should raise an error' do
-          expect { Hubspot::ContactProperties.delete_group!(name) }.to raise_error(Hubspot::RequestError)
+          expect { HubspotLegacy::ContactProperties.delete_group!(name) }.to raise_error(HubspotLegacy::RequestError)
         end
       end
     end

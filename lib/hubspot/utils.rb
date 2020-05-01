@@ -1,4 +1,4 @@
-module Hubspot
+module HubspotLegacy
   class Utils
     class << self
       # Parses the hubspot properties format into a key-value hash
@@ -15,7 +15,7 @@ module Hubspot
       end
 
       def dump_properties(klass, hapikey=ENV['HUBSPOT_API_KEY'], filter={})
-        Hubspot::Deprecator.build.deprecation_warning("Hubspot::Utils.dump_properties")
+        HubspotLegacy::Deprecator.build.deprecation_warning("HubspotLegacy::Utils.dump_properties")
 
         with_hapikey(hapikey) do
           { 'groups'     => klass.groups({}, filter),
@@ -25,7 +25,7 @@ module Hubspot
       end
 
       def restore_properties(klass, hapikey=ENV['HUPSPOT_API_KEY'], properties={}, dry_run=false)
-        Hubspot::Deprecator.build.deprecation_warning("Hubspot::Utils.restore_properties")
+        HubspotLegacy::Deprecator.build.deprecation_warning("HubspotLegacy::Utils.restore_properties")
 
         existing_properties                       = dump_properties(klass, hapikey)
         skip, new_groups, new_props, update_props = compare_property_lists(klass, properties, existing_properties)
@@ -108,10 +108,10 @@ module Hubspot
 
       def with_hapikey(hapikey)
         begin
-          Hubspot.configure(hapikey: hapikey) unless hapikey.blank?
+          HubspotLegacy.configure(hapikey: hapikey) unless hapikey.blank?
           yield if block_given?
         ensure
-          Hubspot.configure(hapikey: ENV['HUBSPOT_API_KEY']) unless hapikey.blank?
+          HubspotLegacy.configure(hapikey: ENV['HUBSPOT_API_KEY']) unless hapikey.blank?
         end
       end
 

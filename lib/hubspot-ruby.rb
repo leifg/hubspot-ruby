@@ -23,13 +23,13 @@ require 'hubspot/subscription'
 require 'hubspot/oauth'
 require 'hubspot/file'
 
-module Hubspot
+module HubspotLegacy
   def self.configure(config={})
-    Hubspot::Config.configure(config)
+    HubspotLegacy::Config.configure(config)
   end
 
   require 'hubspot/railtie' if defined?(Rails)
 end
 
 # Alias the module for those looking to use the stylized name HubSpot
-HubSpot = Hubspot
+HubSpotLegacy = HubspotLegacy
